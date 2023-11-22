@@ -1,0 +1,164 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using InkStudio.Context;
+using InkStudio.Entities;
+using Microsoft.AspNetCore.Authorization;
+
+namespace InkStudio.Controllers
+{
+    public class AgendasController : Controller
+    {
+        private readonly AppDbContext _context;
+
+        public AgendasController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: Agendas
+        public async Task<IActionResult> Index()
+        {
+              return _context.Agendas != null ? 
+                          View(await _context.Agendas.ToListAsync()) :
+                          Problem("Entity set 'AppDbContext.Agendas'  is null.");
+        }
+
+        // GET: Agendas/Details/5
+        public async Task<IActionResult> Details(int? id)
+        {
+            if (id == null || _context.Agendas == null)
+            {
+                return NotFound();
+            }
+
+            var agenda = await _context.Agendas
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (agenda == null)
+            {
+                return NotFound();
+            }
+
+            return View(agenda);
+        }
+
+        // GET: Agendas/Create
+        public IActionResult Create()
+        {
+            return View();
+        }
+
+        // POST: Agendas/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create([Bind("Id,Cliente,Tatuador,Dt_inicio,Dt_inicio,Preço,Pagamento")] Agenda agenda)
+        {
+            if (ModelState.IsValid)
+            {
+                _context.Add(agenda);
+                await _context.SaveChangesAsync();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(agenda);
+        }
+
+        // GET: Agendas/Edit/5
+        public async Task<IActionResult> Edit(int? id)
+        {
+            if (id == null || _context.Agendas == null)
+            {
+                return NotFound();
+            }
+
+            var agenda = await _context.Agendas.FindAsync(id);
+            if (agenda == null)
+            {
+                return NotFound();
+            }
+            return View(agenda);
+        }
+
+        // POST: Agendas/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Cliente,Tatuador,Dt_inicio,Dt_inicio,Preço,Pagamento")] Agenda agenda)
+        {
+            if (id != agenda.Id)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    _context.Update(agenda);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!agendaExists(agenda.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                return RedirectToAction(nameof(Index));
+            }
+            return View(agenda);
+        }
+
+        // GET: Agendas/Delete/5
+        public async Task<IActionResult> Delete(int? id)
+        {
+            if (id == null || _context.Agendas == null)
+            {
+                return NotFound();
+            }
+
+            var agenda = await _context.Agendas
+                .FirstOrDefaultAsync(m => m.Id == id);
+            if (agenda == null)
+            {
+                return NotFound();
+            }
+
+            return View(agenda);
+        }
+
+        // POST: Agendas/Delete/5
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteConfirmed(int id)
+        {
+            if (_context.Agendas == null)
+            {
+                return Problem("Entity set 'AppDbContext.Agendas'  is null.");
+            }
+            var agenda = await _context.Agendas.FindAsync(id);
+            if (agenda != null)
+            {
+                _context.Agendas.Remove(agenda);
+            }
+            
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
+
+        private bool agendaExists(int id)
+        {
+          return (_context.Agendas?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+    }
+}
