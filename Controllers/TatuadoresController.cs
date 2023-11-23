@@ -47,6 +47,7 @@ namespace InkStudio.Controllers
         }
 
         // GET: Tatuadores/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -69,6 +70,7 @@ namespace InkStudio.Controllers
         }
 
         // GET: Tatuadores/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Tatuadores == null)
@@ -120,6 +122,7 @@ namespace InkStudio.Controllers
         }
 
         // GET: Tatuadores/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Tatuadores == null)

@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using InkStudio.Context;
 using InkStudio.Entities;
 using Microsoft.AspNetCore.Authorization;
+using InkStudio.Models;
+using System.Drawing.Printing;
 
 namespace InkStudio.Controllers
 {
@@ -23,9 +25,17 @@ namespace InkStudio.Controllers
         // GET: Agendas
         public async Task<IActionResult> Index()
         {
-              return _context.Agendas != null ? 
-                          View(await _context.Agendas.ToListAsync()) :
-                          Problem("Entity set 'AppDbContext.Agendas'  is null.");
+            if(_context.Agendas != null)
+            {
+                var agendas = await _context.Agendas.ToListAsync();
+                foreach(var item in agendas)
+                {
+                    item.Cliente = _context.Clientes.Where(a => a.ClienteId == item.ClienteId).First();
+                    item.Tatuador = _context.Tatuadores.Where(a => a.TatuadorId == item.TatuadorId).First();
+                }
+                return View(agendas);
+            }
+              return Problem("Entity set 'AppDbContext.Agendas'  is null.");
         }
 
         // GET: Agendas/Details/5
@@ -43,13 +53,21 @@ namespace InkStudio.Controllers
                 return NotFound();
             }
 
+            agenda.Cliente = _context.Clientes.Where(a => a.ClienteId == agenda.ClienteId).First();
+            agenda.Tatuador = _context.Tatuadores.Where(a => a.TatuadorId == agenda.TatuadorId).First();
+
             return View(agenda);
         }
 
         // GET: Agendas/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            return View();
+            var ViewModel = new NovaAgendaViewModel{
+                Clientes = _context.Clientes.ToList(),
+                Tatuadores = _context.Tatuadores.ToList()
+            };
+            return View(ViewModel);
         }
 
         // POST: Agendas/Create
@@ -57,18 +75,41 @@ namespace InkStudio.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Cliente,Tatuador,Dt_inicio,Dt_inicio,Preço,Pagamento")] Agenda agenda)
+        public async Task<IActionResult> Create([Bind("ClienteId,TatuadorId,Dt_inicio,Dt_termino,Preço,Pagamento,Clientes,Tatuadores")] NovaAgendaViewModel viewModel)
         {
+            viewModel.Clientes = _context.Clientes.ToList();
+            viewModel.Tatuadores = _context.Tatuadores.ToList();
             if (ModelState.IsValid)
             {
+                var agenda = new Agenda
+                {
+                    ClienteId = viewModel.ClienteId,
+                    TatuadorId = viewModel.TatuadorId,
+                    Cliente = _context.Clientes.Where(c => c.ClienteId == viewModel.ClienteId).First(),
+                    Tatuador = _context.Tatuadores.Where(c => c.TatuadorId == viewModel.TatuadorId).First(),
+                    Dt_inicio = viewModel.Dt_inicio,
+                    Dt_termino = viewModel.Dt_termino,
+                    Preço = viewModel.Preço,
+                    Pagamento = viewModel.Pagamento
+                };
                 _context.Add(agenda);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(agenda);
+            foreach (var modelStateKey in ModelState.Keys)
+    {
+            var modelStateVal = ModelState[modelStateKey];
+            foreach (var error in modelStateVal.Errors)
+            {
+                // Logue os erros aqui
+                Console.WriteLine($"Erro no campo {modelStateKey}: {error.ErrorMessage}");
+            }
+    }
+            return View(viewModel);
         }
 
         // GET: Agendas/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Agendas == null)
@@ -76,12 +117,28 @@ namespace InkStudio.Controllers
                 return NotFound();
             }
 
+
             var agenda = await _context.Agendas.FindAsync(id);
             if (agenda == null)
             {
                 return NotFound();
             }
-            return View(agenda);
+
+            var ViewModel = new NovaAgendaViewModel{
+                Id = agenda.Id,
+                ClienteId = agenda.ClienteId,
+                TatuadorId = agenda.TatuadorId,
+                Dt_inicio = agenda.Dt_inicio,
+                Dt_termino = agenda.Dt_termino,
+                Preço = agenda.Preço,
+                Pagamento = agenda.Pagamento,
+                // Clientes = _context.Clientes.OrderBy(item => item.ClienteId != agenda.ClienteId).ThenBy(item=>item.ClienteId).ToList(),
+                // Tatuadores = _context.Tatuadores.OrderBy(item => item.TatuadorId != agenda.TatuadorId).ThenBy(item=>item.TatuadorId).ToList()
+                Clientes = _context.Clientes.ToList(),
+                Tatuadores = _context.Tatuadores.ToList()
+            };
+
+            return View(ViewModel);
         }
 
         // POST: Agendas/Edit/5
@@ -89,15 +146,27 @@ namespace InkStudio.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Cliente,Tatuador,Dt_inicio,Dt_inicio,Preço,Pagamento")] Agenda agenda)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,ClienteId,TatuadorId,Dt_inicio,Dt_termino,Preço,Pagamento,Clientes,Tatuadores")] NovaAgendaViewModel viewModel)
         {
-            if (id != agenda.Id)
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
+                var agenda = new Agenda
+                {
+                    Id = id,
+                    ClienteId = viewModel.ClienteId,
+                    TatuadorId = viewModel.TatuadorId,
+                    Cliente = _context.Clientes.Where(c => c.ClienteId == viewModel.ClienteId).First(),
+                    Tatuador = _context.Tatuadores.Where(c => c.TatuadorId == viewModel.TatuadorId).First(),
+                    Dt_inicio = viewModel.Dt_inicio,
+                    Dt_termino = viewModel.Dt_termino,
+                    Preço = viewModel.Preço,
+                    Pagamento = viewModel.Pagamento
+                };
                 try
                 {
                     _context.Update(agenda);
@@ -116,10 +185,11 @@ namespace InkStudio.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(agenda);
+            return View(viewModel);
         }
 
         // GET: Agendas/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Agendas == null)
@@ -133,6 +203,9 @@ namespace InkStudio.Controllers
             {
                 return NotFound();
             }
+
+            agenda.Cliente = _context.Clientes.Where(a => a.ClienteId == agenda.ClienteId).First();
+            agenda.Tatuador = _context.Tatuadores.Where(a => a.TatuadorId == agenda.TatuadorId).First();
 
             return View(agenda);
         }

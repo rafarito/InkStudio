@@ -47,6 +47,7 @@ namespace InkStudio.Controllers
         }
 
         // GET: Clientes/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View();
@@ -69,6 +70,7 @@ namespace InkStudio.Controllers
         }
 
         // GET: Clientes/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Clientes == null)
@@ -120,6 +122,7 @@ namespace InkStudio.Controllers
         }
 
         // GET: Clientes/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Clientes == null)
