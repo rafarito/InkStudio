@@ -22,22 +22,22 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
-                <label asp-for="ClienteId" class="control-label"></label>
+                <label asp-for="ClienteId" class="control-label">Cliente</label>
                 <select asp-for="ClienteId" class="form-control" asp-items="ClienteList"></select>
                 <span asp-validation-for="ClienteId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="TatuadorId" class="control-label"></label>
+                <label asp-for="TatuadorId" class="control-label">Tatuador</label>
                 <select asp-for="TatuadorId" class="form-control" asp-items="TatuadorList"></select>
                 <span asp-validation-for="TatuadorId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Dt_inicio" class="control-label"></label>
+                <label asp-for="Dt_inicio" class="control-label">Data de inicio</label>
                 <input asp-for="Dt_inicio" class="form-control" />
                 <span asp-validation-for="Dt_inicio" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Dt_termino" class="control-label"></label>
+                <label asp-for="Dt_termino" class="control-label">Data de termino</label>
                 <input asp-for="Dt_termino" class="form-control" />
                 <span asp-validation-for="Dt_termino" class="text-danger"></span>
             </div>
