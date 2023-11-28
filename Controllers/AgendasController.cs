@@ -81,30 +81,37 @@ namespace InkStudio.Controllers
             viewModel.Tatuadores = _context.Tatuadores.ToList();
             if (ModelState.IsValid)
             {
-                var agenda = new Agenda
+                if(viewModel.Dt_inicio <= viewModel.Dt_termino)
                 {
-                    ClienteId = viewModel.ClienteId,
-                    TatuadorId = viewModel.TatuadorId,
-                    Cliente = _context.Clientes.Where(c => c.ClienteId == viewModel.ClienteId).First(),
-                    Tatuador = _context.Tatuadores.Where(c => c.TatuadorId == viewModel.TatuadorId).First(),
-                    Dt_inicio = viewModel.Dt_inicio,
-                    Dt_termino = viewModel.Dt_termino,
-                    Preço = viewModel.Preço,
-                    Pagamento = viewModel.Pagamento
-                };
-                _context.Add(agenda);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                    var agenda = new Agenda
+                    {
+                        ClienteId = viewModel.ClienteId,
+                        TatuadorId = viewModel.TatuadorId,
+                        Cliente = _context.Clientes.Where(c => c.ClienteId == viewModel.ClienteId).First(),
+                        Tatuador = _context.Tatuadores.Where(c => c.TatuadorId == viewModel.TatuadorId).First(),
+                        Dt_inicio = viewModel.Dt_inicio,
+                        Dt_termino = viewModel.Dt_termino,
+                        Preço = viewModel.Preço,
+                        Pagamento = viewModel.Pagamento
+                    };
+                    _context.Add(agenda);
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    ModelState.AddModelError("Dt_inicio", "a data de inicio deve ser menor ou igual a data de termino");
+                }
             }
             foreach (var modelStateKey in ModelState.Keys)
-    {
-            var modelStateVal = ModelState[modelStateKey];
-            foreach (var error in modelStateVal.Errors)
             {
-                // Logue os erros aqui
-                Console.WriteLine($"Erro no campo {modelStateKey}: {error.ErrorMessage}");
+                var modelStateVal = ModelState[modelStateKey];
+                foreach (var error in modelStateVal.Errors)
+                {
+                    // Logue os erros aqui
+                    Console.WriteLine($"Erro no campo {modelStateKey}: {error.ErrorMessage}");
+                }
             }
-    }
             return View(viewModel);
         }
 
@@ -132,8 +139,6 @@ namespace InkStudio.Controllers
                 Dt_termino = agenda.Dt_termino,
                 Preço = agenda.Preço,
                 Pagamento = agenda.Pagamento,
-                // Clientes = _context.Clientes.OrderBy(item => item.ClienteId != agenda.ClienteId).ThenBy(item=>item.ClienteId).ToList(),
-                // Tatuadores = _context.Tatuadores.OrderBy(item => item.TatuadorId != agenda.TatuadorId).ThenBy(item=>item.TatuadorId).ToList()
                 Clientes = _context.Clientes.ToList(),
                 Tatuadores = _context.Tatuadores.ToList()
             };
